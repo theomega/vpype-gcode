@@ -1,5 +1,7 @@
 import click
 from pathlib import Path
+import typing
+
 import vpype as vp
 from vpype.layers import LayerType
 
@@ -36,11 +38,11 @@ def invert_axis(
         lc.scale(-1 if invert_x else 1, -1 if invert_y else 1)
         lc.translate(origin[0], origin[1])
 
-
     return document
 
+
 @click.command()
-@click.argument('filename', type=click.Path(exists=False))
+@click.argument("output", type=click.File("w"))
 @click.option(
     "-p",
     "--profile",
@@ -50,8 +52,9 @@ def invert_axis(
     help="gcode writer profile from the vpype configuration file subsection 'gwrite'",
 )
 @vp.global_processor
-def gwrite(document: vp.Document, filename: str, profile: str):
+def gwrite(document: vp.Document, output: typing.TextIO, profile: str):
     gwrite_config = vp.CONFIG_MANAGER.config["gwrite"]
+    print(type(output))
 
     # If no profile was provided, try to use a default
     if not profile:
@@ -100,52 +103,51 @@ def gwrite(document: vp.Document, filename: str, profile: str):
     if invert_x or invert_y:
       document = invert_axis(document, invert_x, invert_y)
 
-    with open(filename, 'w') as f:
-        if header is not None:
-            f.write(header)
-        last_x = 0
-        last_y = 0
-        for layer in document.layers.values():
-            if prelayer is not None:
-                f.write(prelayer)
-            for p in layer:
-                m = p * scale
-                first = True
-                if preblock is not None:
-                    f.write(preblock)
-                for v in m:
-                    x = v.real
-                    if negate_x:
-                        x = -x
-                    y = v.imag
-                    if negate_y:
-                        y = -y
-                    if relative:
-                        dx = x - last_x
-                        dy = y - last_y
-                        if first:
-                            if move is not None:
-                                f.write(move % (dx, dy))
-                            first = False
-                        else:
-                            if line is not None:
-                                f.write(line % (dx, dy))
+    if header is not None:
+        output.write(header)
+    last_x = 0
+    last_y = 0
+    for layer in document.layers.values():
+        if prelayer is not None:
+            output.write(prelayer)
+        for p in layer:
+            m = p * scale
+            first = True
+            if preblock is not None:
+                output.write(preblock)
+            for v in m:
+                x = v.real
+                if negate_x:
+                    x = -x
+                y = v.imag
+                if negate_y:
+                    y = -y
+                if relative:
+                    dx = x - last_x
+                    dy = y - last_y
+                    if first:
+                        if move is not None:
+                            output.write(move % (dx, dy))
+                        first = False
                     else:
-                        if first:
-                            if move is not None:
-                                f.write(move % (x, y))
-                            first = False
-                        else:
-                            if line is not None:
-                                f.write(line % (x, y))
-                    last_x = x
-                    last_y = y
-                if postblock is not None:
-                    f.write(postblock)
-            if postlayer is not None:
-                f.write(postlayer)
-        if footer is not None:
-            f.write(footer)
+                        if line is not None:
+                            output.write(line % (dx, dy))
+                else:
+                    if first:
+                        if move is not None:
+                            output.write(move % (x, y))
+                        first = False
+                    else:
+                        if line is not None:
+                            output.write(line % (x, y))
+                last_x = x
+                last_y = y
+            if postblock is not None:
+                output.write(postblock)
+        if postlayer is not None:
+            output.write(postlayer)
+    if footer is not None:
+        output.write(footer)
 
     return document
 
