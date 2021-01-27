@@ -1,1 +1,1 @@
-include ./bundled_configs.toml
+include vpype_gcode/bundled_configs.toml
