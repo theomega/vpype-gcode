@@ -52,10 +52,15 @@ def invert_axis(
 )
 @vp.global_processor
 def gwrite(document: vp.Document, filename: str, config: str):
-    # Read the config from the main vpype
-    if "gwrite" not in vp.CONFIG_MANAGER.config or config not in vp.CONFIG_MANAGER.config["gwrite"]:
-        raise Exception("gwrite config " + config + " not found in vpype configuration.")
+    # Check that the config is actually there, we can be sure that the `gwrite`
+    # part exists as there are several default configs.
+    if config not in vp.CONFIG_MANAGER.config["gwrite"]:
+        raise Exception("gwrite config " + config +
+                        " not found in vpype configuration." +
+                        "Available gwrite configs: " +
+                        ", ".join(vp.CONFIG_MANAGER.config["gwrite"].keys()))
 
+    # Read the config from the main vpype
     config = vp.CONFIG_MANAGER.config["gwrite"][config]
 
     header = config.get("header", None)
