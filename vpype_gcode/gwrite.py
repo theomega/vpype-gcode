@@ -47,8 +47,7 @@ def invert_axis(
     nargs=1,
     default=None,
     type=str,
-    help="gcode writer profile from the vpype configuration file "+
-         "subsection 'gwrite'"
+    help="gcode writer profile from the vpype configuration file subsection 'gwrite'",
 )
 @vp.global_processor
 def gwrite(document: vp.Document, filename: str, profile: str):
@@ -60,19 +59,22 @@ def gwrite(document: vp.Document, filename: str, profile: str):
         if "default_profile" in gwrite_config:
             profile = gwrite_config["default_profile"]
         else:
-            raise Exception("no gwrite profile provided on the commandline " +
-                            "and no default gwrite profile configured in the " +
-                            "vpype configuration. This can be done using the " +
-                            "\"default_default\" key in the \"gwrite\" section")
-
+            raise Exception(
+                "no gwrite profile provided on the commandline and no default gwrite "
+                + "profile configured in the vpype configuration. This can be done using "
+                + 'the "default_default" key in the "gwrite"  section'
+            )
 
     # Check that the profile is actually there, we can be sure that the `gwrite`
     # part exists as there are several default profiles.
     if profile not in gwrite_config:
-        profiles = [ p for p in gwrite_config.keys() if p != "default_profile" ]
-        raise Exception("gwrite profile " + profile + " not found in vpype  " +
-                        "configuration. Available gwrite profiles: " +
-                        ", ".join(profiles))
+        profiles = [p for p in gwrite_config.keys() if p != "default_profile"]
+        raise Exception(
+            "gwrite profile "
+            + profile
+            + " not found in vpype configuration. Available gwrite profiles: "
+            + ", ".join(profiles)
+        )
 
     # Read the config for the profile from the main vpype
     config = gwrite_config[profile]
