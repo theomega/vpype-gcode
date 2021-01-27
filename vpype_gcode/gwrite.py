@@ -42,27 +42,40 @@ def invert_axis(
 @click.command()
 @click.argument('filename', type=click.Path(exists=False))
 @click.option(
-    "-n",
-    "--configname",
+    "-p",
+    "--profile",
     nargs=1,
     default=None,
-    required=True,
     type=str,
-    help="gcode writer configuration name from the vpype configuration file" +
-         "subsection 'gwrite'",
+    help="gcode writer profile from the vpype configuration file "+
+         "subsection 'gwrite'"
 )
 @vp.global_processor
-def gwrite(document: vp.Document, filename: str, configname: str):
-    # Check that the config is actually there, we can be sure that the `gwrite`
-    # part exists as there are several default configs.
-    if configname not in vp.CONFIG_MANAGER.config["gwrite"]:
-        raise Exception("gwrite config " + configname +
-                        " not found in vpype configuration." +
-                        "Available gwrite configs: " +
-                        ", ".join(vp.CONFIG_MANAGER.config["gwrite"].keys()))
+def gwrite(document: vp.Document, filename: str, profile: str):
+    gwrite_config = vp.CONFIG_MANAGER.config["gwrite"]
 
-    # Read the config from the main vpype
-    config = vp.CONFIG_MANAGER.config["gwrite"][configname]
+    # If no profile was provided, try to use a default
+    if not profile:
+        # Try to get the default profile from the config
+        if "default_profile" in gwrite_config:
+            profile = gwrite_config["default_profile"]
+        else:
+            raise Exception("no gwrite profile provided on the commandline " +
+                            "and no default gwrite profile configured in the " +
+                            "vpype configuration. This can be done using the " +
+                            "\"default_default\" key in the \"gwrite\" section")
+
+
+    # Check that the profile is actually there, we can be sure that the `gwrite`
+    # part exists as there are several default profiles.
+    if profile not in gwrite_config:
+        profiles = [ p for p in gwrite_config.keys() if p != "default_profile" ]
+        raise Exception("gwrite profile " + profile + " not found in vpype  " +
+                        "configuration. Available gwrite profiles: " +
+                        ", ".join(profiles))
+
+    # Read the config for the profile from the main vpype
+    config = gwrite_config[profile]
 
     header = config.get("header", None)
     move = config.get("move", None)
