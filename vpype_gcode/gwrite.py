@@ -1,6 +1,10 @@
 import click
+from pathlib import Path
 import vpype as vp
 from vpype.layers import LayerType
+
+# Load the default config
+vp.CONFIG_MANAGER.load_config_file(str(Path(__file__).parent / "bundled_configs.toml"))
 
 def invert_axis(
     document: vp.Document,
