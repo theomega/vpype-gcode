@@ -42,26 +42,27 @@ def invert_axis(
 @click.command()
 @click.argument('filename', type=click.Path(exists=False))
 @click.option(
-    "-c",
-    "--config",
+    "-n",
+    "--configname",
     nargs=1,
     default=None,
     required=True,
     type=str,
-    help="configuration name from the vpype configuration",
+    help="gcode writer configuration name from the vpype configuration file" +
+         "subsection 'gwrite'",
 )
 @vp.global_processor
-def gwrite(document: vp.Document, filename: str, config: str):
+def gwrite(document: vp.Document, filename: str, configname: str):
     # Check that the config is actually there, we can be sure that the `gwrite`
     # part exists as there are several default configs.
-    if config not in vp.CONFIG_MANAGER.config["gwrite"]:
-        raise Exception("gwrite config " + config +
+    if configname not in vp.CONFIG_MANAGER.config["gwrite"]:
+        raise Exception("gwrite config " + configname +
                         " not found in vpype configuration." +
                         "Available gwrite configs: " +
                         ", ".join(vp.CONFIG_MANAGER.config["gwrite"].keys()))
 
     # Read the config from the main vpype
-    config = vp.CONFIG_MANAGER.config["gwrite"][config]
+    config = vp.CONFIG_MANAGER.config["gwrite"][configname]
 
     header = config.get("header", None)
     move = config.get("move", None)
