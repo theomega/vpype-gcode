@@ -1,18 +1,16 @@
-import click
-from pathlib import Path
+import logging
 import typing
+from pathlib import Path
 
+import click
 import vpype as vp
 from vpype.layers import LayerType
 
 # Load the default config
 vp.CONFIG_MANAGER.load_config_file(str(Path(__file__).parent / "bundled_configs.toml"))
 
-def invert_axis(
-    document: vp.Document,
-    invert_x: bool,
-    invert_y: bool
-):
+
+def invert_axis(document: vp.Document, invert_x: bool, invert_y: bool):
     """ Inverts none, one or both axis of the document.
 
     This applies a relative scale operation with factors of 1 or -1
@@ -101,7 +99,7 @@ def gwrite(document: vp.Document, output: typing.TextIO, profile: str):
     scale = 1 / vp.convert_length(unit)
 
     if invert_x or invert_y:
-      document = invert_axis(document, invert_x, invert_y)
+        document = invert_axis(document, invert_x, invert_y)
 
     if header is not None:
         output.write(header)
